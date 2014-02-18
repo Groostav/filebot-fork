@@ -1,0 +1,15 @@
+BSG	Battlestar Galactica
+CSI(?!.{0,3}(NY|LA|Miami|Academy))	CSI: Crime Scene Investigation
+epl	English Premier League
+HIMYM	How I Met Your Mother
+Hml8p	Homeland
+hoc	House of Cards
+law.and.order.svu	Law & Order: Special Victims Unit
+M.A.S.H	M*A*S*H
+MASH	M*A*S*H
+NCIS.LA	NCIS: Los Angeles
+SuiG7p	Suits
+TBBT	The Big Bang Theory
+tvs.got	Game of Thrones
+UndG7p	Underemployed
+wsop	World Series of Poker

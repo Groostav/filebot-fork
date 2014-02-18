@@ -1,0 +1,32 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/json-io.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/platform.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/simmetrics.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-io.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-jdk.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xz.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/icu4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/rsyntaxtextarea.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/json-simple.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/args4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/miglayout.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xmlrpc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/sevenzipjbinding.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ehcache.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jna.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jacksum.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/groovy.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/junrar-custom.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/nekohtml.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jgat-custom.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsoup.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xercesImpl.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/glazedlists.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

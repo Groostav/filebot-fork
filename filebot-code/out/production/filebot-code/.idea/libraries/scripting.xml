@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="scripting">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ivy.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ant-launcher.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ant-commons-net.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/jsch.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/commons-net.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ant.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/mail.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ant-javamail.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scripting/ant-jsch.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
