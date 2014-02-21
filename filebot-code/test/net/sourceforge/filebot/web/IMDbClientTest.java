@@ -72,7 +72,29 @@ public class IMDbClientTest {
 		assertEquals(2011, movie.getYear());
 		assertEquals(780504, movie.getImdbId(), 0);
 	}
+	
+	@Test(expected=Exception.class)
+	public void searchMovie7() throws Exception {
+		List<Movie> results = imdb.searchMovie(";!!@!@", null);
+		Movie movie = results.get(0);
 
+		
+		assertEquals(null, movie.getName());
+		assertEquals(null, movie.getYear());
+		assertEquals(null, movie.getImdbId(), 0);
+	}
+	
+	@Test(expected=Exception.class)
+	public void searchMovie8() throws Exception {
+		List<Movie> results = imdb.searchMovie("永遠", null);
+		Movie movie = results.get(0);
+
+		
+		assertEquals(null, movie.getName());
+		assertEquals(null, movie.getYear());
+		assertEquals(null, movie.getImdbId(), 0);
+	}
+	
 	@Test
 	public void searchMovieRedirect() throws Exception {
 		List<Movie> results = imdb.searchMovie("(500) Days of Summer (2009)", null);
