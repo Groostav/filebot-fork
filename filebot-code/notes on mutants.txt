@@ -1,0 +1,255 @@
+notes on initial setup:
+- the suite takes too long to run, upward of several minutes
+- odd to think about it from this angle
+- we're only using strongly killed mutants as determining if a mutant was weakly killed is too combersome
+- did some house-keeping on a few tests
+- urgh, hes using tabs and everything else in the universe uses spaces.
+- git was a total pain in the ass. Its nice now that I got it working, but, wow, github is terrible at showing large diffs.
+
+------------------------------------------------------------
+#1 null replacement, force request to server
+old	new	...	...		@@ -55,6 +55,7 @@ public abstract class AbstractEpisodeListProvider implements EpisodeListProvider
+55	55	 		@Override
+56	56	 		public List<Episode> getEpisodeList(SearchResult searchResult, SortOrder sortOrder, Locale locale) throws Exception {
+57	57	 			ResultCache cache = getCache();
+	58	+	        cache = null;
+58	59	 			List<Episode> episodes = (cache != null) ? cache.getEpisodeList(searchResult, sortOrder, locale) : null;
+59	60	 			if (episodes != null) {
+60	61	 				return episodes;
+
+UNKILLED
+no behaviour change observed. This one would be tough to enforce with tests, they really didn't stand a chance.
+It does indicate that there is no assertions on the state of the cache -> could lead to all sorts of "oops"'s
+
+------------------------------------------------------------
+#2, empty-list replacement
+old	new	...	...		@@ -62,6 +62,7 @@ public abstract class AbstractEpisodeListProvider implements EpisodeListProvider
+62	62	 	
+63	63	 			// perform actual search
+64	64	 			episodes = fetchEpisodeList(searchResult, sortOrder, locale);
+	65	+	        episodes = Arrays.asList();
+65	66	 	
+66	67	 			// cache results and return
+67	68	 			return (cache != null) ? cache.putEpisodeList(searchResult, sortOrder, locale, episodes) : episodes;
+
+KILLED 
+assertion failure: getEpisodeListAll
+general error: getEpisodeListSingleSeason, getEpisodeListNumbering
+this one was a gemmi, the tests are very much oriented to catch this kind of thing
+I want to be mean to the caching scheme again...
+
+------------------------------------------------------------
+I'm going to write to the cache with a constant key, and watch this code-base not detect that it's never going to see a cache hit...
+#3 scalar replacement, forces request to server
+old	new	...	...		@@ -64,7 +64,7 @@ public abstract class AbstractEpisodeListProvider implements EpisodeListProvider
+64	64	 			episodes = fetchEpisodeList(searchResult, sortOrder, locale);
+65	65	 	
+66	66	 			// cache results and return
+67		-			return (cache != null) ? cache.putEpisodeList(searchResult, sortOrder, locale, episodes) : episodes;
+	67	+			return (cache != null) ? cache.putEpisodeList(searchResult, sortOrder, Locale.CANADA, episodes) : episodes;
+68	68	 		}
+69	69	 	
+70	70	 		public Locale getDefaultLocale() {
+71	71	 	
+
+UNKILLED
+yup. Nobody bothers to assert that the cache makes sense after running.
+
+------------------------------------------------------------
+This made me re-think my procedure. The way I was inferring that nobody was asserting on the cache was because of the code I've seen,
+there didnt seem to be any helper methods to assert on that cache nor any attempt to from any of the test suite. But there could easily be some clause 
+I missed.
+
+The problem is that running all of the web tests is too slow. So I tagged all the web-tests (the ones that wait for response) with @Ignore
+
+now I can run all tests, that hits all utility methods and just 1 of the web API tests, keeping my test execution pretty speedy.
+
+At this point I stumbled into an environment problem:
+engine.eval(new InputStreamReader(ExpressionFormat.class.getResourceAsStream("ExpressionFormat.lib.groovy")));
+WHY DO PEOPLE LOAD LIBRARIES LIKE THIS. Its not like your code can run groovy, so why be afraid to declare a dependency on it! Bah.
+So now I'm in dependency-configuration mode. It seems like he's only using Groovy for some Command-line parsing stuff, so I think I'm OK to ignore this suite.
+
+And with our newly enabled tests we kill... neither of the above unkilled mutants.
+
+Continuing with our bigger test suite:
+
+------------------------------------------------------------
+lets keep after this cache for a bit.
+I'm actually having trouble getting into the mindset of mutants. 
+add a stale element to the list of elements, see if cache-validation can find it
+#4, List element addition
+old	new	...	...		@@ -56,9 +56,11 @@ public abstract class AbstractEpisodeListProvider implements EpisodeListProvider
+56	56	 		public List<Episode> getEpisodeList(SearchResult searchResult, SortOrder sortOrder, Locale locale) throws Exception {
+57	57	 			ResultCache cache = getCache();
+58	58	 			List<Episode> episodes = (cache != null) ? cache.getEpisodeList(searchResult, sortOrder, locale) : null;
+59		-			if (episodes != null) {
+60		-				return episodes;
+61		-			}
+	59	+	        if (episodes != null) {
+	60	+	            Episode staleEpisode = new Episode(searchResult.name, Date.parse("1990-03-22", "yyyy-mm-dd"), /*season*/5, 20, "Stale Episode", null);
+	61	+	            episodes.add(staleEpisode);
+	62	+	            return episodes;
+	63	+	        }
+62	64	 	
+63	65	 			// perform actual search
+64	66	 			episodes = fetchEpisodeList(searchResult, sortOrder, locale);
+65	67	 	
+
+UNKILLED
+
+nope. This one might be a wee-bit unfair. It would (likely) be too slow to do something like ask for the count of episodes
+(since, even though asking for that would require far less data, you would still incur network latency),
+and writing cache invalidation logic in the UI would be very difficult, at the very least it would require Task primitives.
+
+------------------------------------------------------------
+poke at the web-connection availability
+#5 bomb on web connection
+...	...		@@ -130,10 +131,8 @@ public abstract class AbstractCachedResource<R, T extends Serializable> {
+130	131	 					if (i > 0) {
+131	132	 						Thread.sleep(retryWaitTime);
+132	133	 					}
+133		-					return fetchData(url, lastModified);
+134		-				} catch (FileNotFoundException e) {
+135		-					// if the resource doesn't exist no need for retries
+136		-					throw e;
+	134	+	                throw new UnknownHostException(url.getHost());
+	135	+	                //Javas exception-inference wont let me compile unless I remove the first catch-clause
+137	136	 				} catch (IOException e) {
+138	137	 					if (i >= 0 && i >= retries) {
+139	138	 						throw e;
+140	139	 	
+
+KILLED
+almost every test in TheTVDBTestClient simply passes this exception on to its caller.
+
+------------------------------------------------------------
+ask for non existent DOM elements
+#6 String value replacement
+
+...	...		@@ -99,7 +99,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+99	99	 			Map<Integer, TheTVDBSearchResult> resultSet = new LinkedHashMap<Integer, TheTVDBSearchResult>();
+100	100	 	
+101	101	 			for (Node node : nodes) {
+102		-				int sid = getIntegerContent("seriesid", node);
+	102	+				int sid = getIntegerContent("NonExistentDomElement", node);
+103	103	 				String seriesName = getTextContent("SeriesName", node);
+104	104	 	
+105	105	 				List<String> aliasNames = new ArrayList<String>(2);
+106	106	 	
+
+KILLED
+NPE's in search, searchGerman tests of TheTVBDClientTest
+not exactly elegant but its functional
+
+------------------------------------------------------------
+At this point I'm going to abandon my current methodology of seeking interesting results
+and simply create mutants based purly on operators I can change.
+
+2 reasons for this
+- I'm not actually doing anything useful by sitting here speculating on 'interesting' tests. Granted, a unit-test
+like this might be the way I would show myself that I am or am-not testing some feature I want, but I would do this
+from different approaches anyway. Ironically enough, by going for the most interesting mutants first, I'm not discovering interesting mutants.
+I think a more random approach might yield more, interesting results albeit in a field of useless tests.
+- This is taking a long time. Depending on my vantage point and what I'm here to look for, this process might be too slow.
+It certainly isn't automatable. 
+
+------------------------------------------------------------
+change the way we get the episode number for a special.
+#7 Relational Operator replacement
+...	...		@@ -140,7 +140,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+140	140	 				Integer episodeNumber = getIntegerContent("EpisodeNumber", node);
+141	141	 				Integer seasonNumber = getIntegerContent("SeasonNumber", node);
+142	142	 	
+143		-				if (seasonNumber == null || seasonNumber == 0) {
+	143	+				if (seasonNumber == null || seasonNumber != 0) {
+144	144	 					// handle as special episode
+145	145	 					Integer airsBefore = getIntegerContent("airsbefore_season", node);
+146	146	 					if (airsBefore != null) {
+147	147	 	
+
+KILLED
+3 assertions against the special episodes fail, expecting something other than the pilot
+2 NPE's
+all 5 failing tests are in TTVDBCT
+
+------------------------------------------------------------
+change the way we get a special episode number. 
+He's doing some filtering that doesnt make sense to me. If we change it to we red-bar?
+#8 Member process replacement 
+old	new	...	...		@@ -148,7 +148,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+148	148	 					}
+149	149	 	
+150	150	 					// use given episode number as special number or count specials by ourselves
+151		-					Integer specialNumber = (episodeNumber != null) ? episodeNumber : filterBySeason(specials, seasonNumber).size() + 1;
+	151	+					Integer specialNumber = (episodeNumber != null) ? episodeNumber : specials.size();
+152	152	 					specials.add(new Episode(seriesName, seriesStartDate, seasonNumber, null, episodeName, null, specialNumber, airdate, searchResult));
+153	153	 				} else {
+154	154	 					// handle as normal episode
+155	155	 	
+
+UNKILLED
+I really expected this to be killed. What is that logic doing?
+
+------------------------------------------------------------
+Replace the episode number element from a DOM response with a static variable.
+#9 Scalar value replacement
+...	...		@@ -137,7 +137,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+137	137	 				Date airdate = Date.parse(getTextContent("FirstAired", node), "yyyy-MM-dd");
+138	138	 	
+139	139	 				// default numbering
+140		-				Integer episodeNumber = getIntegerContent("EpisodeNumber", node);
+	140	+				Integer episodeNumber = 1;
+141	141	 				Integer seasonNumber = getIntegerContent("SeasonNumber", node);
+142	142	 	
+143	143	 				if (seasonNumber == null || seasonNumber == 0) {
+144	144	 	
+
+KILLED
+2 tests in TTVDBCT fail:
+both assert that a string (the episode title) isn't what it should be. 
+
+------------------------------------------------------------
+change the way we see if the list is sorted
+#10 Right-Conditional operator replacement
+...	...		@@ -152,7 +152,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+152	152	 					specials.add(new Episode(seriesName, seriesStartDate, seasonNumber, null, episodeName, null, specialNumber, airdate, searchResult));
+153	153	 				} else {
+154	154	 					// handle as normal episode
+155		-					if (sortOrder == SortOrder.Absolute) {
+	155	+					if (sortOrder == SortOrder.Airdate) {
+156	156	 						if (absoluteNumber != null) {
+157	157	 							episodeNumber = absoluteNumber;
+158	158	 							seasonNumber = null;
+159	159	 	
+
+KILLED
+Single failing test, asserts that an episode is different from the one it got.
+
+--------------------------------
+same thing, except this time lets force it into the "unsorted" clause
+#11 Conditional operator nullification
+...	...		@@ -152,7 +152,7 @@ public class TheTVDBClient extends AbstractEpisodeListProvider {
+152	152	 					specials.add(new Episode(seriesName, seriesStartDate, seasonNumber, null, episodeName, null, specialNumber, airdate, searchResult));
+153	153	 				} else {
+154	154	 					// handle as normal episode
+155		-					if (sortOrder == SortOrder.Absolute) {
+	155	+					if (false) {
+156	156	 						if (absoluteNumber != null) {
+157	157	 							episodeNumber = absoluteNumber;
+158	158	 							seasonNumber = null;
+159	159	 	
+
+UNKILLED
+I am disappoint!
+
+
+
+Overall thoughts:
+- There are a number of methods my IDE is tagging as "unused". It could be wrong --in reflection the IDE cant tell which method is getting invoked-- 
+but it seems to me that the tooling your using determines which munants you want to test and which you dont
+is it worth introducing a mutant into a method you _know_ isn't used?
+- I was originally thinking of classifying the kills into good kills and bad kills,
+as separate from strong/weak by the fact that a good kill is one where the assertion points to the error precisely. A bad kill is something like an NPE.
+As I continue in my testing I'm finding that an increasingly difficult line to draw. 
+
+
