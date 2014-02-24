@@ -29,8 +29,9 @@ local.properties
 .buildpath
 
 #################
-## Eclipse
+## IntelliJ
 #################
 
 *workspace.xml
-
+*.class
+filebot-code/out/
