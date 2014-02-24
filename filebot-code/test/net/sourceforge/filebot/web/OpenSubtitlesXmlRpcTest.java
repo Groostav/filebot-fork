@@ -15,8 +15,10 @@ import net.sourceforge.filebot.web.OpenSubtitlesXmlRpc.TryUploadResponse;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class OpenSubtitlesXmlRpcTest {
 
 	private static OpenSubtitlesXmlRpc xmlrpc = new OpenSubtitlesXmlRpc(String.format("%s %s", getApplicationName(), getApplicationVersion()));

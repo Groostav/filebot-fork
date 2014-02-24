@@ -12,12 +12,14 @@ import java.util.List;
 import net.sourceforge.filebot.web.Date;
 import net.sourceforge.filebot.web.Episode;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
 public class EpisodeMetricsTest {
 	
 	@Test
+    @Ignore
 	public void substringMetrics() {
 		Episode eY1T1 = new Episode("Doctor Who", new Date(2005, 0, 0), 1, 1, "Rose", null);
 		// Episode eY2T2 = new Episode("Doctor Who", new Date(1963, 0, 0), 1, 1, "An Unearthly Child");
@@ -48,6 +50,7 @@ public class EpisodeMetricsTest {
 	
 	
 	@Test
+    @Ignore
 	public void matcherLevel2() throws Exception {
 		List<File> files = new ArrayList<File>();
 		List<Episode> episodes = new ArrayList<Episode>();

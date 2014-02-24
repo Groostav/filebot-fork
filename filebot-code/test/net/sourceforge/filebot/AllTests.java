@@ -9,8 +9,8 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 
-@RunWith(Suite.class)
-@SuiteClasses( { FileBotTestSuite.class, TunedTestSuite.class })
+//@RunWith(Suite.class)
+//@SuiteClasses( { FileBotTestSuite.class, TunedTestSuite.class })
 public class AllTests {
 	
 }

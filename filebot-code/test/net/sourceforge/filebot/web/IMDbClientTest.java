@@ -7,8 +7,10 @@ import java.util.Locale;
 
 import net.sourceforge.filebot.web.TMDbClient.MovieInfo;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class IMDbClientTest {
 
 	private final IMDbClient imdb = new IMDbClient();

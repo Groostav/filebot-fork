@@ -9,8 +9,10 @@ import net.sf.ehcache.CacheManager;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class AnidbClientTest {
 
 	/**

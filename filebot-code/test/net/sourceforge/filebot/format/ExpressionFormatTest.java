@@ -9,9 +9,11 @@ import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
+@Ignore
 public class ExpressionFormatTest {
 	
 	@Test

@@ -10,8 +10,10 @@ import java.util.Locale;
 import net.sourceforge.filebot.web.TMDbClient.Artwork;
 import net.sourceforge.filebot.web.TMDbClient.MovieInfo;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TMDbClientTest {
 
 	private final TMDbClient tmdb = new TMDbClient(getApplicationProperty("themoviedb.apikey"));
