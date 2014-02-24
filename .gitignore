@@ -32,6 +32,6 @@ local.properties
 ## IntelliJ
 #################
 
-*workspace.xml
+filebot-code/.idea/workspace.xml
 *.class
 filebot-code/out/
